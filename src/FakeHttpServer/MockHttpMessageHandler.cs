@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 
 namespace FakeHttpServer
 {
@@ -49,7 +50,12 @@ namespace FakeHttpServer
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var route = _routes.Where(x => x.Method == request.Method && Regex.IsMatch(request.RequestUri.AbsolutePath.Trim('/'), x.Route.Trim('/') + "$")).FirstOrDefault();
+            var route = _routes.Find(x => x.Method == request.Method && Regex.IsMatch(request.RequestUri.AbsolutePath.Trim('/'), x.Route.Trim('/') + "$"));
+
+            if (route == null)
+            {
+                return new HttpResponseMessage(HttpStatusCode.NotFound);
+            }
 
             string content = null;
 
@@ -70,12 +76,9 @@ namespace FakeHttpServer
                             : new Dictionary<string, string[]>(),
                 Route = request.RequestUri.Segments.Skip(1).Select(x => x.Trim('/')).ToArray(),
 
-
-
                 Body = request.Content?.Headers.ContentType.MediaType == "application/json"
-                            ? JsonConvert.DeserializeObject<dynamic>(content ?? "")
+                            ? JsonSerializer.Deserialize<ExpandoObject>(content ?? "")
                             : null,
-
 
                 AllowedHttpMethods = _routes.Where(x => x.Route == request.RequestUri.AbsolutePath)
                                                    .Select(x => x.Method)
@@ -83,15 +86,15 @@ namespace FakeHttpServer
                                                    .ToArray()
             };
 
-            var mockHttpResponse = new MockHttpReponse();
+            var mockHttpResponse = new MockHttpReponse(route.Options);
 
             var middlewareHandlers = _routes.Where(x => x.Middleware != null).ToArray();
 
             foreach (var middlewareHandler in middlewareHandlers)
             {
                 bool goon = false;
-                
-                middlewareHandler.Middleware(mockHttpRequest, mockHttpResponse, () => 
+
+                middlewareHandler.Middleware(mockHttpRequest, mockHttpResponse, () =>
                 {
                     goon = true;
                 });
@@ -100,11 +103,6 @@ namespace FakeHttpServer
                 {
                     break;
                 }
-            }
-
-            if (route == null)
-            {
-                return new HttpResponseMessage(HttpStatusCode.NotFound);
             }
 
             var responseMessage = route.Handler(mockHttpRequest, mockHttpResponse);

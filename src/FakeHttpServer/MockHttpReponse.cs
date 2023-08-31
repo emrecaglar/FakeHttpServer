@@ -1,12 +1,9 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json;
 using System.Xml.Serialization;
 
 namespace FakeHttpServer
@@ -20,6 +17,19 @@ namespace FakeHttpServer
         internal Stream HttpResponseFile { get; set; }
         internal object Data { get; set; }
         internal bool Handled { get; set; }
+
+        internal static readonly JsonSerializerOptions DefaultJsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
+        private readonly ResponseOptions _options;
+
+        internal MockHttpReponse(ResponseOptions options)
+        {
+            _options = options;
+        }
 
         public MockHttpReponse Ok(object o = null)
         {
@@ -118,7 +128,7 @@ namespace FakeHttpServer
 
         private HttpContent JsonContent()
         {
-            return new StringContent(JsonConvert.SerializeObject(Data), Encoding.UTF8, HttpResponseContentType);
+            return new StringContent(JsonSerializer.Serialize(Data, _options.JsonOptions ?? DefaultJsonOptions), Encoding.UTF8, HttpResponseContentType);
         }
 
         private HttpContent TextContent()

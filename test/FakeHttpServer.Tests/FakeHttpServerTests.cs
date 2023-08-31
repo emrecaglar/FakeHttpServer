@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
 using Microsoft.Net.Http.Headers;
+using System.Text;
 
 namespace FakeHttpServer.Tests
 {
@@ -17,7 +18,7 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Ok_Response_ShouldBe_Return_SuccessStatusCode_And_Content()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 map => map.GET("/api/books", (req, res) =>
@@ -44,7 +45,7 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Route_Regex_ShouldBe_Return_RouteValue()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 map => map.GET("/api/users/.+", (req, res) =>
@@ -68,18 +69,18 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Login_ShouldBe_Return_SetCookie_In_Header()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 map => map.POST("/api/users/signin", (req, res) =>
                 {
                     res.AddHeader("Set-Cookie", "SessionId=123");
-
+                    int i = req.Body.id;
                     return res.Ok();
                 })
             );
 
-            var result = await client.PostAsync($"/api/users/signin", new StringContent(""));
+            var result = await client.PostAsync($"/api/users/signin", new StringContent("{ \"id\": 1 }", Encoding.UTF8, "application/json"));
 
             bool ok = result.Headers.TryGetValues("Set-Cookie", out IEnumerable<string> headers);
 
@@ -93,7 +94,7 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Options_Request_ShouldBe_Return_Usable_HttpMethods()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 map => map.GET("/api/users", (req, res) =>
@@ -128,7 +129,7 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task GetStream_Request_ShouldBe_Return_File()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var file = new byte[] { 16, 33, 22 };
 
@@ -154,7 +155,7 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Request_ShouldBe_Return_BadRequest()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 map => map.GET("/api/some", (req, res) =>
@@ -172,7 +173,7 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Request_ShouldBe_Return_404()
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 map => map.GET("/api/some", (req, res) =>
@@ -194,7 +195,7 @@ namespace FakeHttpServer.Tests
         [InlineData("api/authenticated-required", "wrong-jwt", "", HttpStatusCode.Unauthorized)]
         public async Task UseMiddleware_Request_ShouldBe_Check_Jwt_Return_True_StatusCode(string resource, string jwt, string role, HttpStatusCode expectedStatusCode)
         {
-            var server = new FakeHttpServer();
+            var server = new FakeHttpClient();
 
             var client = server.Setup(
                 //Authentication

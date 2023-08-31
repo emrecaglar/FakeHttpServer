@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace FakeHttpServer
 {
@@ -16,12 +14,18 @@ namespace FakeHttpServer
         internal Func<MockHttpRequest, MockHttpReponse, MockHttpReponse> Handler { get; set; }
 
         internal MockMiddlewareHandler Middleware { get; set; }
+        
+        internal ResponseOptions Options { get; }
+
+        internal RequestHandler(ResponseOptions options) 
+        {
+            Options = options;
+        }
 
         public void UseMiddleware(MockMiddlewareHandler handler)
         {
             Middleware = handler;
         }
-
 
         private void SET(
             HttpMethod method,
