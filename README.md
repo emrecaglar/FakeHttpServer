@@ -3,9 +3,9 @@ It is used to respond to HttpClient requests for unit testing.
 
 
 ```csharp
-var server = new FakeHttpServer();
+var fakeHttp = new FakeHttpClient();
 
-var client = server.Setup(
+var client = fakeHttp.Setup(
     map => map.UseMiddleware((req, res, next) => 
     {
         bool exists = req.Headers.TryGetValue(HeaderNames.Authorization, out string header)
