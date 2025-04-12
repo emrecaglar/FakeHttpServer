@@ -1,6 +1,7 @@
 # Fake Http Server
 It is used to respond to HttpClient requests for unit testing.
 
+![NuGet Downloads](https://img.shields.io/nuget/dt/FakeHttpServer)
 
 ```csharp
 var fakeHttp = new FakeHttpClient();
