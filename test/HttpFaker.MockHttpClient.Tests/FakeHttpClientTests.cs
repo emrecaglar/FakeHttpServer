@@ -1,43 +1,37 @@
 using System;
 using System.Threading.Tasks;
 using System.Linq;
-using Xunit;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net;
-//using Microsoft.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Dynamic;
+using HttpFaker.MockHttpClient;
+using Microsoft.Extensions.Primitives;
 
 namespace FakeHttpServer.Tests
 {
-    public class FakeHttpServerTests
+    public class FakeHttpClientTests
     {
-        [Fact]
-        public void JsonSerializeDynamicTest()
+        private readonly FakeHttpClient _fakeHttp;
+
+        public FakeHttpClientTests()
         {
-            var json = "{ \"id\": 1, \"name\": \"emre\"}";
-
-            dynamic obj = JsonSerializer.Deserialize<dynamic>(json);
-
-            Assert.IsType<int>(obj.id);
+            _fakeHttp = new FakeHttpClient();
         }
 
         [Fact]
         public async Task Ok_Response_ShouldBe_Return_SuccessStatusCode_And_Content_WhenMultipleRouteKeys()
         {
-            var server = new FakeHttpClient();
-            
-            var client = server.Setup(
-                map => map.GET(@"/api/book/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/(\d+)", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet(@"/api/book/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/page/(\d+)", (req, res) =>
                 {
                     return res.Ok(new BookPage
                     {
                         BookId = Guid.Parse(req.Route[2]),
-                        PageNum = int.Parse(req.Route[3])
+                        PageNum = int.Parse(req.Route[4])
                     });
                 })
             );
@@ -45,11 +39,11 @@ namespace FakeHttpServer.Tests
             var bookId = Guid.NewGuid();
             var bookPageNum = 4;
 
-            var result = await client.GetAsync($"/api/book/{bookId}/{bookPageNum}");
+            var result = await client.GetAsync($"/api/book/{bookId}/page/{bookPageNum}");
 
             string content = await result.Content.ReadAsStringAsync();
 
-            var responseObject = JsonSerializer.Deserialize<BookPage>(content);
+            var responseObject = JsonSerializer.Deserialize<BookPage>(content, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
             Assert.Equal(bookId, responseObject.BookId);
             Assert.Equal(bookPageNum, responseObject.PageNum);
@@ -58,10 +52,8 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Ok_Response_ShouldBe_Return_SuccessStatusCode_And_Content()
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
-                map => map.GET("/api/books", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet("/api/books", (req, res) =>
                 {
                     return res.Ok(new[]
                     {
@@ -76,7 +68,7 @@ namespace FakeHttpServer.Tests
 
             string content = await result.Content.ReadAsStringAsync();
 
-            var responseObject = JsonSerializer.Deserialize<List<Book>>(content);
+            var responseObject = JsonSerializer.Deserialize<List<Book>>(content, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
             Assert.Equal(3, responseObject.Count);
             Assert.True(result.IsSuccessStatusCode);
@@ -85,10 +77,8 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Route_Regex_ShouldBe_Return_RouteValue()
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
-                map => map.GET("/api/users/.+", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet("/api/users/.+", (req, res) =>
                 {
                     return res.Ok(new { route = req.Route[2] });
                 })
@@ -100,21 +90,20 @@ namespace FakeHttpServer.Tests
 
             string content = await result.Content.ReadAsStringAsync();
 
-            var responseObject = JsonSerializer.Deserialize<dynamic>(content);
+            var jObj = JsonDocument.Parse(content);
+            var actual = jObj.RootElement.GetProperty("route").GetString();
 
-            Assert.Equal(routeValue, responseObject.route.ToString());
+            Assert.Equal(routeValue, actual);
             Assert.True(result.IsSuccessStatusCode);
         }
 
         [Fact]
         public async Task Login_ShouldBe_Return_SetCookie_In_Header()
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
-                map => map.POST("/api/users/signin", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapPost("/api/users/signin", (req, res) =>
                 {
-                    res.AddHeader("Set-Cookie", "SessionId=123");
+                    res.TryAddHeader("Set-Cookie", "SessionId=123");
 
                     return res.Ok();
                 })
@@ -134,20 +123,18 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Options_Request_ShouldBe_Return_Usable_HttpMethods()
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
-                map => map.GET("/api/users", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet("/api/users", (req, res) =>
                 {
                     return res.Ok();
                 }),
 
-                map => map.POST("/api/users", (req, res) =>
+                map => map.MapPost("/api/users", (req, res) =>
                 {
                     return res.Ok();
                 }),
 
-                map => map.OPTIONS("/api/users")
+                map => map.MapOptions("/api/users")
             );
 
             var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Options, "/api/users"));
@@ -156,7 +143,7 @@ namespace FakeHttpServer.Tests
 
             var header = headerValues.FirstOrDefault();
 
-            var usablehttpMethods = header.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
+            var usablehttpMethods = header.Split([','], StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToArray();
 
             Assert.True(ok);
 
@@ -169,12 +156,10 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task GetStream_Request_ShouldBe_Return_File()
         {
-            var server = new FakeHttpClient();
-
             var file = new byte[] { 16, 33, 22 };
 
-            var client = server.Setup(
-                map => map.GET("/api/file", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet("/api/file", (req, res) =>
                 {
                     return res.File(file);
                 })
@@ -195,10 +180,8 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Request_ShouldBe_Return_BadRequest()
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
-                map => map.GET("/api/some", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet("/api/some", (req, res) =>
                 {
                     return res.StatusCode((int)HttpStatusCode.BadRequest);
                 })
@@ -213,10 +196,8 @@ namespace FakeHttpServer.Tests
         [Fact]
         public async Task Request_ShouldBe_Return_404()
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
-                map => map.GET("/api/some", (req, res) =>
+            var client = _fakeHttp.Setup(
+                map => map.MapGet("/api/some", (req, res) =>
                 {
                     return res.Ok();
                 })
@@ -235,13 +216,11 @@ namespace FakeHttpServer.Tests
         [InlineData("api/authenticated-required", "wrong-jwt", "", HttpStatusCode.Unauthorized)]
         public async Task UseMiddleware_Request_ShouldBe_Check_Jwt_Return_True_StatusCode(string resource, string jwt, string role, HttpStatusCode expectedStatusCode)
         {
-            var server = new FakeHttpClient();
-
-            var client = server.Setup(
+            var client = _fakeHttp.Setup(
                 //Authentication
                 map => map.UseMiddleware((req, res, next) =>
                 {
-                    if (req.Headers.TryGetValue("Authorization", out string authorizationHeader) && authorizationHeader.Equals("Bearer true-jwt", StringComparison.OrdinalIgnoreCase))
+                    if (req.Headers.TryGetValues("Authorization", out var authorizationHeader) && new StringValues(authorizationHeader.ToArray()).Equals("Bearer true-jwt"))
                     {
                         next();
 
@@ -264,17 +243,17 @@ namespace FakeHttpServer.Tests
                     }
                 }),
 
-                map => map.GET("/api/authenticated-required", (req, res) =>
+                map => map.MapGet("/api/authenticated-required", (req, res) =>
                 {
                     return res.Ok();
                 }),
 
-                map => map.GET("/api/admin", (req, res) =>
+                map => map.MapGet("/api/admin", (req, res) =>
                 {
                     return res.Ok();
                 }),
 
-                map => map.GET("/api/user", (req, res) =>
+                map => map.MapGet("/api/user", (req, res) =>
                 {
                     return res.Ok();
                 })
@@ -312,7 +291,7 @@ namespace FakeHttpServer.Tests
 
         public string Author { get; set; }
 
-        public string Year { get; set; }
+        public int Year { get; set; }
     }
 
     public class BookPage

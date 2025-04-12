@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFaker.Serilization.SystemTextJson", "src\HttpFaker.Serilization.SystemTextJson\HttpFaker.Serilization.SystemTextJson.csproj", "{13D90B31-9447-480D-A7CE-411B7C512CFC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFaker.Serilization.NewtonsoftJson", "src\HttpFaker.Serilization.NewtonsoftJson\HttpFaker.Serilization.NewtonsoftJson.csproj", "{DACC5789-4EA0-4F87-B043-275F5DEF0BF5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFaker.Abstaction", "src\HttpFaker.Abstaction\HttpFaker.Abstaction.csproj", "{667FD936-F9A0-4A90-AE8B-A30D80D70048}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFaker.MockHttpClient", "src\HttpFaker.MockHttpClient\HttpFaker.MockHttpClient.csproj", "{9F0DC44B-7A42-4C7E-BF6C-F184A808A21C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HttpFaker.MockHttpClient.Tests", "test\HttpFaker.MockHttpClient.Tests\HttpFaker.MockHttpClient.Tests.csproj", "{84EB551D-05BB-4F6E-9C29-06DBC6EAD1D4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13D90B31-9447-480D-A7CE-411B7C512CFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D90B31-9447-480D-A7CE-411B7C512CFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D90B31-9447-480D-A7CE-411B7C512CFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D90B31-9447-480D-A7CE-411B7C512CFC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DACC5789-4EA0-4F87-B043-275F5DEF0BF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DACC5789-4EA0-4F87-B043-275F5DEF0BF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DACC5789-4EA0-4F87-B043-275F5DEF0BF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DACC5789-4EA0-4F87-B043-275F5DEF0BF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{667FD936-F9A0-4A90-AE8B-A30D80D70048}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{667FD936-F9A0-4A90-AE8B-A30D80D70048}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{667FD936-F9A0-4A90-AE8B-A30D80D70048}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{667FD936-F9A0-4A90-AE8B-A30D80D70048}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F0DC44B-7A42-4C7E-BF6C-F184A808A21C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F0DC44B-7A42-4C7E-BF6C-F184A808A21C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F0DC44B-7A42-4C7E-BF6C-F184A808A21C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F0DC44B-7A42-4C7E-BF6C-F184A808A21C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84EB551D-05BB-4F6E-9C29-06DBC6EAD1D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84EB551D-05BB-4F6E-9C29-06DBC6EAD1D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84EB551D-05BB-4F6E-9C29-06DBC6EAD1D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84EB551D-05BB-4F6E-9C29-06DBC6EAD1D4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{84EB551D-05BB-4F6E-9C29-06DBC6EAD1D4} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8703EC1C-099C-4A73-87CF-E9EC67AD70AE}
+	EndGlobalSection
+EndGlobal
