@@ -23,6 +23,54 @@ namespace FakeHttpServer.Tests
         }
 
         [Fact]
+        public async Task PostAsync_ShouldBe_Return_Ok_When_MultipartFormDataBinding()
+        {
+            var client = _fakeHttp.Setup(
+                map => map.MapPost(@"/api/book/image", (req, res) =>
+                {
+                    Assert.NotEmpty(req.Form);
+                    Assert.True(req.Form.FirstOrDefault(x => x.Key == "Size").Value == "128x128");
+                    Assert.NotEmpty(req.FormFiles);
+                    Assert.True(req.FormFiles[0].SequenceEqual(new byte[] { 45, 23, 12, 54 }));
+
+                    return res.Ok();
+                })
+            );
+
+            var multipart = new MultipartContent
+            {
+                new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    { "Size", "128x128" }
+                }),
+                new StreamContent(new MemoryStream([45,23,12,54]))
+            };
+
+            var result = await client.PostAsync($"/api/book/image", multipart);
+        }
+
+        [Fact]
+        public async Task Ok_Response_ShouldBe_Return_Ok_When_FormBinding()
+        {
+            var client = _fakeHttp.Setup(
+                map => map.MapPost(@"/api/book/sales", (req, res) =>
+                {
+                    Assert.NotEmpty(req.Form);
+                    Assert.True(req.Form.FirstOrDefault(x => x.Key == "Customer").Value == "John Doe");
+                    Assert.True(req.Form.FirstOrDefault(x => x.Key == "Price").Value == "150.55");
+
+                    return res.Ok();
+                })
+            );
+
+            var result = await client.PostAsync($"/api/book/sales", new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "Customer", "John Doe" },
+                { "Price", "150.55" },
+            }));
+        }
+
+        [Fact]
         public async Task Ok_Response_ShouldBe_Return_SuccessStatusCode_And_Content_WhenMultipleRouteKeys()
         {
             var client = _fakeHttp.Setup(

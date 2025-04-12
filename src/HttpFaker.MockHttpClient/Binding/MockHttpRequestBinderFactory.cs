@@ -1,21 +1,27 @@
-﻿namespace HttpFaker.MockHttpClient.Binding
+﻿using System.Collections.Generic;
+using System;
+
+namespace HttpFaker.MockHttpClient.Binding
 {
     internal class MockHttpRequestBinderFactory
     {
+        private readonly Dictionary<string, Type> _binders;
+
+        public MockHttpRequestBinderFactory(Dictionary<string, Type> binders)
+        {
+            _binders = binders;
+        }
+
         public IMockHttpRequestBinder CreateBinder(string contentType)
         {
-            switch (contentType)
+            if (contentType != null && _binders.TryGetValue(contentType, out var binderType))
             {
-                case MimeTypes.ApplicationXml:
-                case MimeTypes.ApplicationJson:
-                    return new RawBinder();
-                case MimeTypes.ApplicationFormUrlEncoded:
-                    return new FormBinder();
-                case MimeTypes.MultiPartFormData:
-                    return new MultipartFormDataBinder();
-                default:
-                    return new NullBinder();
+                var binder = Activator.CreateInstance(binderType) as IMockHttpRequestBinder;
+
+                return binder ?? new NullBinder();
             }
+
+            return new NullBinder();
         }
     }
 }

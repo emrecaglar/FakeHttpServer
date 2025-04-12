@@ -4,6 +4,7 @@ using HttpFaker.MockHttpClient.Extensions;
 using HttpFaker.MockHttpClient.Internal;
 using HttpFaker.Serilization.SystemTextJson;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
@@ -15,7 +16,7 @@ namespace HttpFaker.MockHttpClient
     {
         public FakeHttpClient()
         {
-            
+
         }
 
         public FakeHttpClient(Action<FakeHttpClientOptions> config) : this()
@@ -30,7 +31,15 @@ namespace HttpFaker.MockHttpClient
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 WriteIndented = false
-            })
+            }),
+            Binders = new Dictionary<string, Type> 
+            {
+                { MimeTypes.ApplicationJson, typeof(RawBinder) },
+                { MimeTypes.ApplicationXml, typeof(RawBinder) },
+                { MimeTypes.ApplicationFormUrlEncoded, typeof(FormBinder) },
+                { MimeTypes.MultiPartFormData, typeof(MultipartFormDataBinder) },
+                { MimeTypes.MultiPartMixed, typeof(MultipartFormDataBinder) },
+            }
         };
 
         public HttpClient Setup(params Action<RequestHandler>[] handlers)
@@ -44,7 +53,7 @@ namespace HttpFaker.MockHttpClient
                 return handler;
             }).ToList();
 
-            return new HttpClient(new MockHttpMessageHandler(new RouteCollection(requestHandlers), new MockHttpRequestBinderFactory(), new RegexRouteMatcher()))
+            return new HttpClient(new MockHttpMessageHandler(new RouteCollection(requestHandlers), new MockHttpRequestBinderFactory(Options.Binders), new RegexRouteMatcher()))
             {
                 BaseAddress = new Uri("http://fake.http")
             };
