@@ -4,6 +4,8 @@ It is used to respond to HttpClient requests for unit testing.
 ![NuGet Version](https://img.shields.io/nuget/v/FakeHttpServer)
 ![NuGet Downloads](https://img.shields.io/nuget/dt/FakeHttpServer)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/emrecaglar/FakeHttpServer/dotnet.yml)
+![GitHub License](https://img.shields.io/github/license/emrecaglar/FakeHttpServer)
+
 
 
 ```csharp
