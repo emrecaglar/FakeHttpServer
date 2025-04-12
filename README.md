@@ -1,8 +1,8 @@
 # Fake Http Server
 It is used to respond to HttpClient requests for unit testing.
 
-![NuGet Version](https://img.shields.io/nuget/v/FakeHttpServer)
-![NuGet Downloads](https://img.shields.io/nuget/dt/FakeHttpServer)
+![NuGet Version](https://img.shields.io/nuget/v/HttpFaker.MockHttpClient?style=for-the-badge)
+![NuGet Downloads](https://img.shields.io/nuget/dt/HttpFaker.MockHttpClient?style=for-the-badge)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/emrecaglar/FakeHttpServer/dotnet.yml)
 ![GitHub License](https://img.shields.io/github/license/emrecaglar/FakeHttpServer)
 
