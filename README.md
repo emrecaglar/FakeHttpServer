@@ -110,7 +110,7 @@ string content = await  result.Content.ReadAsStringAsync();
 # Summary
 <details open><summary>Summary</summary>
 
-|||
+|Title|Value|
 |:---|:---|
 | Generated on: | 12.04.2025 - 20:38:24 |
 | Coverage date: | 12.04.2025 - 20:29:22 |

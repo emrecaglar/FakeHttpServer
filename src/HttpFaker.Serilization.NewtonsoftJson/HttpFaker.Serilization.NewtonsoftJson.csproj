@@ -2,7 +2,29 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<PackageProjectUrl>https://github.com/emrecaglar/FakeHttpServer</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/emrecaglar/FakeHttpServer</RepositoryUrl>
+	<PackageTags>unittest test mock http fake</PackageTags>
+	<Authors>Emre Çağlar</Authors>
+	<Version>1.0.0</Version>
+	<Copyright>Emre Çağlar</Copyright>
+	<Description>MockHttpClient Newtonsoft.Json json serialize extension package</Description>
+	<PackageReadmeFile>README.md</PackageReadmeFile>
+	<RepositoryType>git</RepositoryType>
+	<PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
