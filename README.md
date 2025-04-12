@@ -20,7 +20,16 @@ var client = fakeHttp.Setup(
         }
     }),
 
-    map => map.GET("/api/books", (req, res) =>
+	map => map.MapGet(@"/api/book/([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})/page/(\d+)", (req, res) =>
+	{
+		return res.Ok(new BookPage
+		{
+			BookId = Guid.Parse(req.Route[2]),
+			PageNum = int.Parse(req.Route[4])
+		});
+	})
+
+    map => map.MapGet("/api/books", (req, res) =>
     {
         return res.Ok(new []
         {
@@ -30,7 +39,7 @@ var client = fakeHttp.Setup(
         });
     }),
 
-    map => map.GET("/api/admin-area", (req, res) =>
+    map => map.MapGet("/api/admin-area", (req, res) =>
     {
         return res.Json(new 
         { 
@@ -38,7 +47,7 @@ var client = fakeHttp.Setup(
         });
     }),
 
-    map => map.GET("/api/users", (req, res) =>
+    map => map.MapGet("/api/users", (req, res) =>
     {
         res.AddHeader("Set-Cookie", "SessionId=123");
 
@@ -48,7 +57,7 @@ var client = fakeHttp.Setup(
         });
     }),
 
-    map => map.GET("/api/users/.+", (req, res) =>
+    map => map.MapGet("/api/users/.+", (req, res) =>
     {
         return res.Json(new 
         { 
@@ -56,23 +65,23 @@ var client = fakeHttp.Setup(
         });
     }),
 
-    map => map.POST("/api/users", (req, res) =>
+    map => map.MapPost("/api/users", (req, res) =>
     {
         var createResult = new { UserId = 1 };
 
         return res.StatusCode((int)HttpStatusCode.Created, createResult);
     }),
 
-    map => map.OPTIONS("/api/users"),
+    map => map.MapOptions("/api/users"),
 
-    map => map.GET("/api/downloadFile", (req, res) =>
+    map => map.MapGet("/api/downloadFile", (req, res) =>
     {
         var file = new byte[]{ 16, 24, 35 };
 
         return res.File(file);
     }),
 +
-    map => map.POST("/api/noroute", (req, res) =>
+    map => map.MapPost("/api/noroute", (req, res) =>
     {
         return res.StatusCode(404);
     })
