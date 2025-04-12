@@ -106,3 +106,58 @@ string content = await  result.Content.ReadAsStringAsync();
     { "name": "Devil's Knot", "author": "Mara Leveritt", "year": 2002 }
 ]
 ```
+
+# Summary
+<details open><summary>Summary</summary>
+
+|||
+|:---|:---|
+| Generated on: | 12.04.2025 - 20:38:24 |
+| Coverage date: | 12.04.2025 - 20:29:22 |
+| Parser: | Cobertura |
+| Assemblies: | 2 |
+| Classes: | 16 |
+| Files: | 15 |
+| **Line coverage:** | 73.1% (313 of 428) |
+| Covered lines: | 313 |
+| Uncovered lines: | 115 |
+| Coverable lines: | 428 |
+| Total lines: | 805 |
+| **Branch coverage:** | 71.7% (56 of 78) |
+| Covered branches: | 56 |
+| Total branches: | 78 |
+| **Method coverage:** | [Feature is only available for sponsors](https://reportgenerator.io/pro) |
+
+</details>
+
+## Coverage
+<details><summary>HttpFaker.Abstaction - 100%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**HttpFaker.Abstaction**|**100%**|****|
+|HttpFaker.Abstaction.FakeHttpClientOptions|100%||
+
+</details>
+<details><summary>HttpFaker.MockHttpClient - 72.9%</summary>
+
+|**Name**|**Line**|**Branch**|
+|:---|---:|---:|
+|**HttpFaker.MockHttpClient**|**72.9%**|**71.7%**|
+|HttpFaker.MockHttpClient.Binding.FormBinder|100%|100%|
+|HttpFaker.MockHttpClient.Binding.MockHttpRequestBinderFactory|100%|83.3%|
+|HttpFaker.MockHttpClient.Binding.MultipartFormDataBinder|96.2%|100%|
+|HttpFaker.MockHttpClient.Binding.NullBinder|100%||
+|HttpFaker.MockHttpClient.Binding.RawBinder|100%|100%|
+|HttpFaker.MockHttpClient.Extensions.FakeHttpClientOptionsExtensions|0%|0%|
+|HttpFaker.MockHttpClient.FakeHttpClient|89.4%||
+|HttpFaker.MockHttpClient.Internal.PayloadInput|100%||
+|HttpFaker.MockHttpClient.Internal.RegexRouteMatcher|100%|100%|
+|HttpFaker.MockHttpClient.Internal.RequestPayload|88.8%|83.3%|
+|HttpFaker.MockHttpClient.Internal.RouteCollection|75%||
+|HttpFaker.MockHttpClient.MockHttpMessageHandler|100%|85.7%|
+|HttpFaker.MockHttpClient.MockHttpRequest|100%||
+|HttpFaker.MockHttpClient.MockHttpResponse|52.4%|61.5%|
+|HttpFaker.MockHttpClient.RequestHandler|56.1%|0%|
+
+</details>
