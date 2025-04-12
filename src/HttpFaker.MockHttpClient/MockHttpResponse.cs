@@ -1,124 +1,148 @@
-﻿using System.Collections.Generic;
+﻿using HttpFaker.Abstaction;
+using Microsoft.Extensions.Primitives;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Text.Json;
 using System.Xml.Serialization;
 
-namespace FakeHttpServer
+namespace HttpFaker.MockHttpClient
 {
-    public class MockHttpReponse
+    public class MockHttpResponse
     {
-        internal Dictionary<string, string> _headers = new Dictionary<string, string>();
+        internal bool ResponseIsStarted { get; private set; }
+
+        internal Dictionary<string, StringValues> _headers { get; set; } = new Dictionary<string, StringValues>();
 
         internal HttpStatusCode HttpResponseStatusCode { get; set; } = HttpStatusCode.OK;
+
         internal string HttpResponseContentType { get; set; }
+
         internal Stream HttpResponseFile { get; set; }
+
         internal object Data { get; set; }
+
         internal bool Handled { get; set; }
 
-        internal static readonly JsonSerializerOptions DefaultJsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
+        private readonly FakeHttpClientOptions _options;
 
-        private readonly ResponseOptions _options;
-
-        internal MockHttpReponse(ResponseOptions options)
+        internal MockHttpResponse(FakeHttpClientOptions options)
         {
             _options = options;
         }
 
-        public MockHttpReponse Ok(object o = null)
+        public MockHttpResponse Ok(object o = null)
         {
             Data = o;
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse File(byte[] file)
+        public MockHttpResponse File(byte[] file)
         {
             HttpResponseFile = new MemoryStream(file);
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse File(string localFilePath)
+        public MockHttpResponse File(string localFilePath)
         {
             HttpResponseFile = new FileStream(localFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse Json(object o)
+        public MockHttpResponse Json(object o)
         {
             Data = o;
             HttpResponseContentType = "application/json";
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse View(string html)
+        public MockHttpResponse View(string html)
         {
             Data = html;
             HttpResponseContentType = "text/html";
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse Xml(object o)
+        public MockHttpResponse Xml(object o)
         {
             Data = o;
             HttpResponseContentType = "application/xml";
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse Content(string content)
+        public MockHttpResponse Content(string content)
         {
             HttpResponseContentType = "text/plain";
             Data = content;
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse StatusCode(int statusCode)
+        public MockHttpResponse StatusCode(int statusCode)
         {
             HttpResponseStatusCode = (HttpStatusCode)statusCode;
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public MockHttpReponse StatusCode(int statusCode, object obj)
+        public MockHttpResponse StatusCode(int statusCode, object obj)
         {
             HttpResponseStatusCode = (HttpStatusCode)statusCode;
             Data = obj;
+            ResponseIsStarted = true;
 
             return this;
         }
 
-        public void AddHeader(string key, string value)
+        public MockHttpResponse NotFound(object obj = null)
+        {
+            HttpResponseStatusCode = HttpStatusCode.NotFound;
+            Data = obj;
+            ResponseIsStarted = true;
+
+            return this;
+        }
+
+        public bool TryAddHeader(string key, params string[] values)
         {
             if (!_headers.ContainsKey(key))
             {
-                _headers.Add(key, value);
+                _headers.Add(key, new StringValues(values));
+
+                return true;
             }
+
+            return false;
         }
 
         private HttpContent XmlContent()
         {
             if (Data == null)
             {
-                return new StringContent("", Encoding.UTF8, "application/xml");
+                return new StringContent("", Encoding.UTF8, MimeTypes.ApplicationXml);
             }
 
             var sb = new StringBuilder();
             var serializer = new XmlSerializer(Data.GetType());
             serializer.Serialize(new StringWriter(sb), Data);
 
-            return new StringContent(sb.ToString(), Encoding.UTF8, "application/xml");
+            return new StringContent(sb.ToString(), Encoding.UTF8, MimeTypes.ApplicationXml);
         }
 
         private HttpContent FileContent()
@@ -128,17 +152,17 @@ namespace FakeHttpServer
 
         private HttpContent JsonContent()
         {
-            return new StringContent(JsonSerializer.Serialize(Data, _options.JsonOptions ?? DefaultJsonOptions), Encoding.UTF8, HttpResponseContentType);
+            return new StringContent(_options.JsonProvider.Serialize(Data), Encoding.UTF8, HttpResponseContentType);
         }
 
         private HttpContent TextContent()
         {
-            return new StringContent($"{Data}", Encoding.UTF8, "text/plain");
+            return new StringContent($"{Data}", Encoding.UTF8, MimeTypes.TextPlain);
         }
 
         private HttpContent HtmlContent()
         {
-            return new StringContent($"{Data}", Encoding.UTF8, "text/html");
+            return new StringContent($"{Data}", Encoding.UTF8, MimeTypes.TextHtml);
         }
 
         internal HttpResponseMessage Convert(HttpRequestMessage req)
@@ -153,21 +177,21 @@ namespace FakeHttpServer
 
                     if (string.IsNullOrWhiteSpace(acceptType))
                     {
-                        acceptType = "application/json";
+                        acceptType = MimeTypes.ApplicationJson;
                     }
 
                     switch (acceptType)
                     {
-                        case "text/html":
+                        case MimeTypes.TextHtml:
                             content = HtmlContent();
                             break;
-                        case "application/json":
+                        case MimeTypes.ApplicationJson:
                             content = JsonContent();
                             break;
-                        case "application/xml":
+                        case MimeTypes.ApplicationXml:
                             content = XmlContent();
                             break;
-                        case "text/plain":
+                        case MimeTypes.TextPlain:
                             content = TextContent();
                             break;
                     }
@@ -186,12 +210,24 @@ namespace FakeHttpServer
                 RequestMessage = req
             };
 
-            foreach (var header in _headers)
-            {
-                httpResponseMessage.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
+            SetResponseHeaders(httpResponseMessage, _options.DefaultResponseHeaders);
+            
+            SetResponseHeaders(httpResponseMessage, _headers);
 
             return httpResponseMessage;
+        }
+
+        private void SetResponseHeaders(HttpResponseMessage httpResponseMessage, Dictionary<string, StringValues> headers)
+        {
+            foreach (var header in headers)
+            {
+                if (httpResponseMessage.Headers.Contains(header.Key))
+                {
+                    httpResponseMessage.Headers.Remove(header.Value);
+                }
+
+                httpResponseMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.AsEnumerable());
+            }
         }
     }
 }
