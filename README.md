@@ -6,7 +6,19 @@ It is used to respond to HttpClient requests for unit testing.
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/emrecaglar/FakeHttpServer/dotnet.yml)
 ![GitHub License](https://img.shields.io/github/license/emrecaglar/FakeHttpServer)
 
+## FakeHttpServer
 
+### Overview
+- **Purpose**: It simulates HTTP server responses for unit testing purposes, allowing developers to test their HTTP client code without needing a real server.
+- **Language**: The project is written in C#.
+
+### Features
+- **Middleware Setup**: You can set up middleware to handle requests and responses, including authorization checks.
+- **Route Mapping**: It supports various HTTP methods (GET, POST, PUT, OPTIONS, TRACE, HEAD, DELETE) and routes, allowing you to define how the server should respond to different endpoints.
+- **Response Handling**: You can customize responses, including status codes, headers, and content.
+
+### Example Usage
+Here's a brief example of how you might use FakeHttpServer:
 
 ```csharp
 var fakeHttp = new FakeHttpClient();
@@ -45,14 +57,6 @@ var client = fakeHttp.Setup(
         });
     }),
 
-    map => map.MapGet("/api/admin-area", (req, res) =>
-    {
-        return res.Json(new 
-        { 
-            name = "emre" 
-        });
-    }),
-
     map => map.MapGet("/api/users", (req, res) =>
     {
         res.AddHeader("Set-Cookie", "SessionId=123");
@@ -60,14 +64,6 @@ var client = fakeHttp.Setup(
         return res.Json(new 
         { 
             name = "emre" 
-        });
-    }),
-
-    map => map.MapGet("/api/users/.+", (req, res) =>
-    {
-        return res.Json(new 
-        { 
-            route = req.Route[2]
         });
     }),
 
@@ -85,11 +81,6 @@ var client = fakeHttp.Setup(
         var file = new byte[]{ 16, 24, 35 };
 
         return res.File(file);
-    }),
-+
-    map => map.MapPost("/api/noroute", (req, res) =>
-    {
-        return res.StatusCode(404);
     })
 );
 
