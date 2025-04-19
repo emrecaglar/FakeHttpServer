@@ -140,7 +140,7 @@ namespace HttpFaker.MockHttpClient
 
             var sb = new StringBuilder();
             var serializer = new XmlSerializer(Data.GetType());
-            serializer.Serialize(new StringWriter(sb), Data);
+            serializer.Serialize(new StringWriter(sb), Data ?? string.Empty);
 
             return new StringContent(sb.ToString(), Encoding.UTF8, MimeTypes.ApplicationXml);
         }
@@ -152,17 +152,17 @@ namespace HttpFaker.MockHttpClient
 
         private HttpContent JsonContent()
         {
-            return new StringContent(_options.JsonProvider.Serialize(Data), Encoding.UTF8, HttpResponseContentType);
+            return new StringContent(_options.JsonProvider.Serialize(Data) ?? string.Empty, Encoding.UTF8, HttpResponseContentType);
         }
 
         private HttpContent TextContent()
         {
-            return new StringContent($"{Data}", Encoding.UTF8, MimeTypes.TextPlain);
+            return new StringContent($"{Data ?? string.Empty}", Encoding.UTF8, MimeTypes.TextPlain);
         }
 
         private HttpContent HtmlContent()
         {
-            return new StringContent($"{Data}", Encoding.UTF8, MimeTypes.TextHtml);
+            return new StringContent($"{Data ?? string.Empty}", Encoding.UTF8, MimeTypes.TextHtml);
         }
 
         internal HttpResponseMessage Convert(HttpRequestMessage req)
@@ -204,7 +204,7 @@ namespace HttpFaker.MockHttpClient
 
             var httpResponseMessage = new HttpResponseMessage
             {
-                Content = content,
+                Content = content ?? new StringContent(string.Empty),
                 StatusCode = HttpResponseStatusCode,
                 Version = req.Version,
                 RequestMessage = req
@@ -217,7 +217,7 @@ namespace HttpFaker.MockHttpClient
             return httpResponseMessage;
         }
 
-        private void SetResponseHeaders(HttpResponseMessage httpResponseMessage, Dictionary<string, StringValues> headers)
+        private static void SetResponseHeaders(HttpResponseMessage httpResponseMessage, Dictionary<string, StringValues> headers)
         {
             foreach (var header in headers)
             {

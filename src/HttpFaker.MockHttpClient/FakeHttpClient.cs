@@ -1,6 +1,5 @@
 ﻿using HttpFaker.Abstaction;
 using HttpFaker.MockHttpClient.Binding;
-using HttpFaker.MockHttpClient.Extensions;
 using HttpFaker.MockHttpClient.Internal;
 using HttpFaker.Serilization.SystemTextJson;
 using System;
@@ -14,6 +13,8 @@ namespace HttpFaker.MockHttpClient
 {
     public class FakeHttpClient
     {
+        private const string FakeUri = "http://fake.http";
+
         public FakeHttpClient()
         {
 
@@ -55,7 +56,7 @@ namespace HttpFaker.MockHttpClient
 
             return new HttpClient(new MockHttpMessageHandler(new RouteCollection(requestHandlers), new MockHttpRequestBinderFactory(Options.Binders), new RegexRouteMatcher()))
             {
-                BaseAddress = new Uri("http://fake.http")
+                BaseAddress = new Uri(FakeUri)
             };
         }
     }
