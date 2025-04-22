@@ -1,7 +1,6 @@
-﻿using HttpFaker.Abstaction;
-using Microsoft.Extensions.Primitives;
+﻿using Microsoft.Extensions.Primitives;
 
-namespace HttpFaker.MockHttpClient.Extensions
+namespace HttpFaker.Abstaction
 {
     public static class FakeHttpClientOptionsExtensions
     {

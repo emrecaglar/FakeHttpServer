@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.Primitives;
-using System.Collections.Generic;
 using System.Linq;
 
-namespace HttpFaker.MockHttpClient.Extensions
+namespace System.Collections.Generic
 {
     public static class SringEnumerableExtensions
     {

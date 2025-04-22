@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
@@ -17,7 +18,7 @@ namespace HttpFaker.MockHttpClient
 
         public Version Version { get; set; }
 
-        public IEnumerable<KeyValuePair<string, StringValues>> QueryString { get; set; }
+        public IEnumerable<KeyValuePair<string, StringValues>> QueryString { get; set; } = Enumerable.Empty<KeyValuePair<string, StringValues>>();
 
         public string[] Route { get; set; }
 
