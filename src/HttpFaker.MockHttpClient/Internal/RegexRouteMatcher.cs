@@ -12,7 +12,10 @@ namespace HttpFaker.MockHttpClient.Internal
     {
         public RequestHandler Match(RouteCollection routes, HttpRequestMessage httpRequestMessage)
         {
-            return routes.Find(x => x.Method == httpRequestMessage.Method && Regex.IsMatch(httpRequestMessage.RequestUri.AbsolutePath.Trim('/'), x.Route.Trim('/') + "$"));
+            return routes.Find(x =>
+                x.Method == httpRequestMessage.Method &&
+                Regex.IsMatch(httpRequestMessage.RequestUri.AbsolutePath.Trim('/'), x.Route.Trim('/') + "$", RegexOptions.IgnoreCase)
+            );
         }
     }
 }
