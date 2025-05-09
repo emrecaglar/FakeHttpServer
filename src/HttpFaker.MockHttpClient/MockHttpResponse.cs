@@ -133,7 +133,7 @@ namespace HttpFaker.MockHttpClient
 
         private HttpContent XmlContent()
         {
-            if (Data == null)
+            if (IsStringEmptyOrNull(Data))
             {
                 return new StringContent("", Encoding.UTF8, MimeTypes.ApplicationXml);
             }
@@ -145,6 +145,9 @@ namespace HttpFaker.MockHttpClient
             return new StringContent(sb.ToString(), Encoding.UTF8, MimeTypes.ApplicationXml);
         }
 
+        private static bool IsStringEmptyOrNull(object o) => o == null || (o is string s && string.IsNullOrWhiteSpace(s));
+        
+
         private HttpContent FileContent()
         {
             return new StreamContent(HttpResponseFile);
@@ -152,7 +155,7 @@ namespace HttpFaker.MockHttpClient
 
         private HttpContent JsonContent()
         {
-            return new StringContent(_options.JsonProvider.Serialize(Data) ?? string.Empty, Encoding.UTF8, HttpResponseContentType);
+            return new StringContent(IsStringEmptyOrNull(Data) ? string.Empty : _options.JsonProvider.Serialize(Data) ?? string.Empty, Encoding.UTF8, HttpResponseContentType);
         }
 
         private HttpContent TextContent()
@@ -211,7 +214,7 @@ namespace HttpFaker.MockHttpClient
             };
 
             SetResponseHeaders(httpResponseMessage, _options.DefaultResponseHeaders);
-            
+
             SetResponseHeaders(httpResponseMessage, _headers);
 
             return httpResponseMessage;
